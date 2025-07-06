@@ -2,37 +2,45 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
 
-const HIRU_NEWS_LOCAL_URL = 'https://www.hirunews.lk/sinhala/local-news'; // දේශීය පුවත් පිටුව
+// Esana News වෙබ් අඩවියේ නවතම පුවත් පිටුව
+const ESANA_NEWS_URL = 'https://www.esana.lk/category/news'; // ඔබට අවශ්‍ය URL එක වෙනස් කරන්න පුළුවන්
 
-async function scrapeHiruNews() {
+async function scrapeEsanaNews() {
     try {
-        const { data } = await axios.get(HIRU_NEWS_LOCAL_URL);
+        const { data } = await axios.get(ESANA_NEWS_URL);
         const $ = cheerio.load(data);
         const articles = [];
 
-        // ### මෙතන තමයි CSS selectors අලුත් කරලා තියෙන්නේ ###
-        // ඔබගේ screenshots වලට අනුව සහ Hiru News වෙබ් අඩවියේ වත්මන් HTML structure එකට අනුව (2025 ජූලි 6)
-        // සෑම පුවත් ලිපියක්ම අඩංගු වන ප්‍රධාන div එක සොයයි.
-        // මෙය වෙනස් විය හැක.
-        $('div.l-news-item').each((i, element) => {
+        // ### Esana.lk වෙබ් අඩවියේ වත්මන් HTML structure එකට අනුව selectors ###
+        // මෙය 2025 ජූලි 07 දිනට අදාළව සාදන ලද්දකි. වෙබ් අඩවිය වෙනස් වුවහොත් මෙය වෙනස් කිරීමට සිදුවනු ඇත.
+
+        // සෑම පුවත් ලිපියක්ම අඩංගු වන ප්‍රධාන container එක සොයා ගනී
+        // Esana.lk හි, මෙය සාමාන්‍යයෙන් 'row' class එකක් සහිත div එකක් තුළ ඇති 'col-md-6 col-12 mb-4' වැනි class එකක් සහිත div එකක් විය හැකියි.
+        // කරුණාකර ඔබ browser එකේ Inspect කර මෙය තහවුරු කරගන්න.
+        $('div.row.category-news-items > div.col-md-6.col-12.mb-4').each((i, element) => {
             if (articles.length >= 3) return false; // පුවත් 3ක් ලැබුණු පසු නවත්වන්න
 
-            const titleElement = $(element).find('h3.l-news-item__title a');
+            // මාතෘකාව සහ සබැඳිය
+            const titleElement = $(element).find('h3.news-item-title a');
             const title = titleElement.text().trim();
-            const relativeUrl = titleElement.attr('href'); // e.g., /sinhala/local-news/12345/article-title
-            
-            // Description එක තියෙන්නේ p tag එකක් ඇතුලේ
-            const descriptionElement = $(element).find('p.l-news-item__desc');
-            const description = descriptionElement.text().trim();
+            const url = titleElement.attr('href'); // Esana URLs සාමාන්‍යයෙන් සම්පූර්ණයි
 
-            if (title && relativeUrl) {
-                // Relativel URL එකට Hiru News base URL එක එකතු කර සම්පූර්ණ URL එක හදයි.
-                const fullUrl = `https://www.hirunews.lk${relativeUrl}`; 
-                
+            // විස්තරය
+            const descriptionElement = $(element).find('p.news-item-desc'); // හෝ `div.news-item-content p` වැනි දෙයක්
+            let description = descriptionElement.text().trim();
+
+            if (title && url) {
+                // විස්තරයක් නොමැතිනම් හෝ හිස් නම්, මාතෘකාවම කෙටි විස්තරයක් ලෙස යොදන්න
+                if (!description) {
+                    description = title.length > 150 ? title.substring(0, 150) + '...' : title;
+                } else {
+                    description = description.length > 200 ? description.substring(0, 200) + '...' : description;
+                }
+
                 articles.push({
                     title: title,
-                    url: fullUrl,
-                    description: description.length > 200 ? description.substring(0, 200) + '...' : description // විස්තරය කෙටි කරයි
+                    url: url, // Esana URL එක සම්පූර්ණයි
+                    description: description
                 });
             }
         });
@@ -40,10 +48,9 @@ async function scrapeHiruNews() {
         return articles;
 
     } catch (error) {
-        console.error(`Error scraping Hiru News from ${HIRU_NEWS_LOCAL_URL}:`, error.message);
-        // දෝෂයක් ඇති වුවහොත් හිස් array එකක් return කරන්න
+        console.error(`Error scraping Esana News from ${ESANA_NEWS_URL}:`, error.message);
         return [];
     }
 }
 
-module.exports = { scrapeHiruNews };
+module.exports = { scrapeEsanaNews };
