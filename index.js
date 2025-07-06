@@ -1,14 +1,13 @@
 // index.js
-require('dotenv').config(); // .env file එක load කරගැනීමට
+require('dotenv').config();
 const express = require('express');
-const { scrapeHiruNews } = require('./scraper'); // scraper එක import කරන්න
+const { scrapeEsanaNews } = require('./scraper'); // <-- මෙතන වෙනස් කරන්න!
 
 const app = express();
-const PORT = process.env.PORT || 3000; // Render එකෙන් PORT එකක් දෙනවා, නැත්නම් 3000
+const PORT = process.env.PORT || 3000;
 
-app.use(express.json()); // JSON body parsing සඳහා
+app.use(express.json());
 
-// Health check endpoint
 app.get('/', (req, res) => {
     res.send('Sinhala News API is running!');
 });
@@ -16,13 +15,13 @@ app.get('/', (req, res) => {
 // News API endpoint
 app.get('/api/news', async (req, res) => {
     try {
-        const newsArticles = await scrapeHiruNews(); // scraper function එක call කරන්න
+        const newsArticles = await scrapeEsanaNews(); // <-- මෙතනත් වෙනස් කරන්න!
 
         if (newsArticles.length === 0) {
             return res.status(404).json({ message: "Sorry, no Sinhala news found at the moment." });
         }
 
-        res.status(200).json(newsArticles); // පුවත් JSON format එකෙන් යවන්න
+        res.status(200).json(newsArticles);
 
     } catch (error) {
         console.error('Error in /api/news endpoint:', error.message);
@@ -30,7 +29,6 @@ app.get('/api/news', async (req, res) => {
     }
 });
 
-// Server එක පටන් ගන්න
 app.listen(PORT, () => {
     console.log(`Sinhala News API server is running on port ${PORT}`);
 });
