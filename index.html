@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEWS-D - නවතම සිංහල පුවත්</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        /* Header */
+        .header {
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(10px);
+            color: white;
+            padding: 15px 0;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.3);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .logo {
+            font-size: 32px;
+            font-weight: bold;
+            background: linear-gradient(45deg, #ff6b6b, #ffa726);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .live-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #4CAF50;
+        }
+
+        .live-dot {
+            width: 12px;
+            height: 12px;
+            background: #4CAF50;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .last-updated {
+            font-size: 12px;
+            color: #ccc;
+        }
+
+        /* Main Content */
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 100px 20px 20px;
+        }
+
+        .news-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .tab-button {
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 25px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .tab-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .tab-button.active {
+            background: linear-gradient(45deg, #ff6b6b, #ffa726);
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+        }
+
+        .news-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+        }
+
+        .news-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        .news-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+        }
+
+        .news-card.breaking {
+            border: 2px solid #ff4444;
+            box-shadow: 0 0 20px rgba(255, 68, 68, 0.3);
+        }
+
+        .breaking-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #ff4444;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.7; }
+        }
+
+        .news-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            position: relative;
+            text-align: center;
+            padding: 20px;
+            box-shadow: inset 0 0 30px rgba(0,0,0,0.1);
+        }
+
+        .news-image::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y="50" font-size="40" text-anchor="middle" x="50" fill="white" opacity="0.3">📰</text></svg>') center/cover;
+            opacity: 0.3;
+        }
+
+        .news-image-text {
+            position: relative;
+            z-index: 1;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .news-content {
+            padding: 20px;
+        }
+
+        .news-source {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .source-logo {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #ff6b6b, #ffa726);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
+        }
+
+        .source-name {
+            font-size: 12px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .news-time {
+            font-size: 12px;
+            color: #999;
+            margin-left: auto;
+        }
+
+        .news-title {
+            font-size: 18px;
+            font-weight: bold;
+            line-height: 1.4;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .news-summary {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+
+        .news-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .read-more {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .read-more:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .news-category {
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 90px 10px 10px;
+            }
+            
+            .news-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .news-tabs {
+                justify-content: center;
+            }
+            
+            .tab-button {
+                font-size: 14px;
+                padding: 10px 16px;
+            }
+        }
+
+        /* Auto-refresh notification */
+        .refresh-notification {
+            position: fixed;
+            top: 90px;
+            right: 20px;
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 14px;
+            box-shadow: 0 4px 20px rgba(76, 175, 80, 0.3);
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 1001;
+        }
+
+        .refresh-notification.show {
+            transform: translateX(0);
+        }
+
+        .news-counter {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            color: white;
+        }
+
+        /* Full news modal */
+        .news-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .news-modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+            padding: 5px;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+
+        .modal-close:hover {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .full-news-image {
+            width: 100%;
+            height: 300px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .full-news-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+
+        .full-news-content {
+            line-height: 1.8;
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .news-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-size: 14px;
+            color: #666;
+        }
+
+        /* API Button */
+        .api-section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 30px 0;
+            text-align: center;
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+        }
+
+        .api-button {
+            background: linear-gradient(45deg, #ff6b6b, #ffa726);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+            margin: 10px;
+        }
+
+        .api-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+        }
+
+        .api-info {
+            color: white;
+            font-size: 14px;
+            margin-top: 10px;
+            opacity: 0.8;
+        }
+
+        /* API Modal */
+        .api-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 3000;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .api-modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .api-modal-content {
+            background: #1a1a1a;
+            border-radius: 15px;
+            max-width: 1000px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            color: white;
+        }
+
+        .api-modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .api-modal-body {
+            padding: 20px;
+        }
+
+        .api-endpoint {
+            background: #2a2a2a;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .api-response {
+            background: #2a2a2a;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .copy-button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+
+        .copy-button:hover {
+            background: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">NEWS-D</div>
+            <div class="live-indicator">
+                <div class="live-dot"></div>
+                <span>LIVE</span>
+            </div>
+            <div class="news-counter" id="newsCounter">පුවත් 0</div>
+            <div class="last-updated" id="lastUpdated">අවසන් යාවත්කාලීන: --:--</div>
+        </div>
+    </header>
+
+    <div class="main-content">
+        <div class="news-tabs">
+            <button class="tab-button active" data-category="all">සියලු පුවත්</button>
+            <button class="tab-button" data-category="breaking">හදිසි පුවත්</button>
+            <button class="tab-button" data-category="politics">දේශපාලන</button>
+            <button class="tab-button" data-category="sports">ක්‍රීඩා</button>
+            <button class="tab-button" data-category="world">ලෝක</button>
+            <button class="tab-button" data-category="business">ව්‍යාපාර</button>
+        </div>
+
+        <div class="news-grid" id="newsGrid">
+            <div class="loading">
+                <div class="loading-spinner"></div>
+                <p style="color: white;">නවතම පුවත් පූරණය වෙමින්...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- API Section -->
+    <div class="main-content">
+        <div class="api-section">
+            <h2 style="color: white; margin-bottom: 15px;">📡 NEWS-D API</h2>
+            <p style="color: white; margin-bottom: 20px;">අපගේ news data සඳහා API access ලබා ගන්න</p>
+            <button class="api-button" onclick="showApiModal()">GET API</button>
+            <div class="api-info">
+                Real-time news data, JSON format, RESTful endpoints
+            </div>
+        </div>
+    </div>
+
+    <!-- Full News Modal -->
+    <div class="news-modal" id="newsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">පුවත් විස්තර</h2>
+                <button class="modal-close" onclick="closeNewsModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="full-news-image" id="modalImage">
+                    <div class="news-image-text">NEWS-D</div>
+                </div>
+                <div class="full-news-content" id="modalContent">
+                    <!-- Full news content will be loaded here -->
+                </div>
+                <div class="news-meta">
+                    <span id="modalSource"></span>
+                    <span id="modalTime"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- API Modal -->
+    <div class="api-modal" id="apiModal">
+        <div class="api-modal-content">
+            <div class="api-modal-header">
+                <h2>📡 NEWS-D API Documentation</h2>
+                <button class="modal-close" onclick="closeApiModal()" style="color: white;">&times;</button>
+            </div>
+            <div class="api-modal-body">
+                <h3>Available Endpoints:</h3>
+                
+                <div class="api-endpoint">
+                    <strong>GET /api/news</strong>
+                    <button class="copy-button" onclick="copyToClipboard('https://news-d.com/api/news')">Copy</button>
+                    <br><small>Get all latest news</small>
+                </div>
+
+                <div class="api-endpoint">
+                    <strong>GET /api/news/category/{category}</strong>
+                    <button class="copy-button" onclick="copyToClipboard('https://news-d.com/api/news/category/politics')">Copy</button>
+                    <br><small>Get news by category (politics, sports, world, business, breaking)</small>
+                </div>
+
+                <div class="api-endpoint">
+                    <strong>GET /api/news/{id}</strong>
+                    <button class="copy-button" onclick="copyToClipboard('https://news-d.com/api/news/123')">Copy</button>
+                    <br><small>Get specific news by ID</small>
+                </div>
+
+                <h3>Sample Response:</h3>
+                <div class="api-response" id="apiResponse">
+{
+  "status": "success",
+  "data": [
+    {
+      "id": 1,
+      "title": "ගෝටාභය රාජපක්ෂ මහතා අද රටට පැමිණේ",
+      "summary": "පෙරදිග පාරාවනය සිදුකරමින් සිටි ගෝටාභය රාජපක්ෂ මහතා අද රටට පැමිණෙන බව වාර්තා වේ...",
+      "content": "Full article content here...",
+      "category": "politics",
+      "source": "NEWS-D",
+      "image": "https://news-d.com/images/news1.jpg",
+      "published_at": "2024-07-18T10:30:00Z",
+      "updated_at": "2024-07-18T10:30:00Z"
+    }
+  ],
+  "meta": {
+    "total": 150,
+    "page": 1,
+    "per_page": 20
+  }
+}
+                </div>
+
+                <h3>Authentication:</h3>
+                <p>API key required for access. Contact admin for API key.</p>
+                
+                <div class="api-endpoint">
+                    <strong>Header:</strong> Authorization: Bearer YOUR_API_KEY
+                    <button class="copy-button" onclick="copyToClipboard('Authorization: Bearer YOUR_API_KEY')">Copy</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="refresh-notification" id="refreshNotification">
+        නව පුවත් යාවත්කාලීන කරන ලදී! 📰
+    </div>
+
+    <script>
+        class NewsApp {
+            constructor() {
+                this.news = [];
+                this.currentCategory = 'all';
+                this.refreshInterval = 30000; // 30 seconds
+                this.newsCounter = 0;
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.loadNews();
+                this.startAutoRefresh();
+            }
+
+            setupEventListeners() {
+                document.querySelectorAll('.tab-button').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        this.switchCategory(e.target.dataset.category);
+                    });
+                });
+            }
+
+            switchCategory(category) {
+                this.currentCategory = category;
+                document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+                document.querySelector(`[data-category="${category}"]`).classList.add('active');
+                this.renderNews();
+            }
+
+            async loadNews() {
+                try {
+                    // Simulate loading news from different sources
+                    const mockNews = this.generateMockNews();
+                    this.news = mockNews;
+                    this.newsCounter = mockNews.length;
+                    this.renderNews();
+                    this.updateLastUpdated();
+                    this.showRefreshNotification();
+                } catch (error) {
+                    console.error('Error loading news:', error);
+                    this.showError();
+                }
+            }
+
+            generateMockNews() {
+                const sources = [
+                    { name: 'NEWS-D', logo: 'N', url: '#' },
+                    { name: 'NEWS-D', logo: 'N', url: '#' },
+                    { name: 'NEWS-D', logo: 'N', url: '#' },
+                    { name: 'NEWS-D', logo: 'N', url: '#' },
+                    { name: 'NEWS-D', logo: 'N', url: '#' }
+                ];
+
+                const categories = ['breaking', 'politics', 'sports', 'world', 'business'];
+                
+                const newsTemplates = [
+                    {
+                        title: 'ගෝටාභය රාජපක්ෂ මහතා අද රටට පැමිණේ',
+                        summary: 'පෙරදිග පාරාවනය සිදුකරමින් සිටි ගෝටාභය රාජපක්ෂ මහතා අද රටට පැමිණෙන බව වාර්තා වේ...',
+                        category: 'politics'
+                    },
+                    {
+                        title: 'ශ්‍රී ලංකා ක්‍රිකට් කණ්ඩායම අද ඉන්දියාවට පිටත්වේ',
+                        summary: 'ඉන්දියාවේ පැවැත්වෙන ටී20 තරගාවලිය සඳහා ශ්‍රී ලංකා ක්‍රිකට් කණ්ඩායම අද පිටත්වෙයි...',
+                        category: 'sports'
+                    },
+                    {
+                        title: 'කොළඹ කොටස් වෙළෙඳපොළ වැඩි වීමක් වාර්තා කරයි',
+                        summary: 'අද දින කොළඹ කොටස් වෙළෙඳපොළ සුචිගුණකය 2.5%ක වැඩි වීමක් වාර්තා කර ඇත...',
+                        category: 'business'
+                    },
+                    {
+                        title: 'ඇමරිකානු ජනාධිපති ශ්‍රී ලංකාවට පැමිණීමට නියමිතයි',
+                        summary: 'ඇමරිකානු ජනාධිපති ශ්‍රී ලංකාවට රාජ්‍ය සංචාරයක් සිදුකිරීමට නියමිත බව වාර්තා වේ...',
+                        category: 'world'
+                    },
+                    {
+                        title: 'හදිසි: කොළඹ නගරයේ ආගමික ගැටුමක්',
+                        summary: 'කොළඹ නගරයේ ආගමික ගැටුමක් හේතුවෙන් ආරක්ෂක හමුදා නියෝජිතයින් වහාම ස්ථානයට...',
+                        category: 'breaking'
+                    }
+                ];
+
+                return Array.from({ length: 12 }, (_, i) => {
+                    const template = newsTemplates[i % newsTemplates.length];
+                    const source = sources[i % sources.length];
+                    const isBreaking = Math.random() < 0.2;
+                    
+                    return {
+                        id: i + 1,
+                        title: template.title + ` - ${new Date().getHours()}:${new Date().getMinutes()}`,
+                        summary: template.summary,
+                        category: isBreaking ? 'breaking' : template.category,
+                        source: source,
+                        time: this.getRandomTime(),
+                        image: 'NEWS-D',
+                        breaking: isBreaking
+                    };
+                });
+            }
+
+            getRandomTime() {
+                const minutes = Math.floor(Math.random() * 60) + 1;
+                if (minutes < 60) {
+                    return `මිනිත්තු ${minutes}කට පෙර`;
+                } else {
+                    const hours = Math.floor(minutes / 60);
+                    return `පැය ${hours}කට පෙර`;
+                }
+            }
+
+            renderNews() {
+                const newsGrid = document.getElementById('newsGrid');
+                const filteredNews = this.currentCategory === 'all' 
+                    ? this.news 
+                    : this.news.filter(item => item.category === this.currentCategory);
+
+                if (filteredNews.length === 0) {
+                    newsGrid.innerHTML = '<div class="loading"><p style="color: white;">මෙම වර්ගයේ පුවත් නොමැත</p></div>';
+                    return;
+                }
+
+                newsGrid.innerHTML = filteredNews.map(item => `
+                    <div class="news-card ${item.breaking ? 'breaking' : ''}" style="animation-delay: ${Math.random() * 0.5}s">
+                        ${item.breaking ? '<div class="breaking-badge">හදිසි</div>' : ''}
+                        <div class="news-image">
+                            <div class="news-image-text">${item.image}</div>
+                        </div>
+                        <div class="news-content">
+                            <div class="news-source">
+                                <div class="source-logo">${item.source.logo}</div>
+                                <span class="source-name">${item.source.name}</span>
+                                <span class="news-time">${item.time}</span>
+                            </div>
+                            <h3 class="news-title">${item.title}</h3>
+                            <p class="news-summary">${item.summary}</p>
+                            <div class="news-actions">
+                                <a href="${item.source.url}" class="read-more">සම්පූර්ණ පුවත</a>
+                                <span class="news-category">${this.getCategoryName(item.category)}</span>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+
+                // Update counter
+                document.getElementById('newsCounter').textContent = `පුවත් ${this.newsCounter}`;
+            }
+
+            getCategoryName(category) {
+                const names = {
+                    'breaking': 'හදිසි',
+                    'politics': 'දේශපාලන',
+                    'sports': 'ක්‍රීඩා',
+                    'world': 'ලෝක',
+                    'business': 'ව්‍යාපාර'
+                };
+                return names[category] || 'සාමාන්‍ය';
+            }
+
+            updateLastUpdated() {
+                const now = new Date();
+                const timeString = now.toLocaleTimeString('si-LK', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                });
+                document.getElementById('lastUpdated').textContent = `අවසන් යාවත්කාලීන: ${timeString}`;
+            }
+
+            showRefreshNotification() {
+                const notification = document.getElementById('refreshNotification');
+                notification.classList.add('show');
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000);
+            }
+
+            showError() {
+                const newsGrid = document.getElementById('newsGrid');
+                newsGrid.innerHTML = `
+                    <div class="loading">
+                        <p style="color: white;">පුවත් පූරණය කිරීමේදී දෝෂයක් සිදුවිය. කරුණාකර නැවත උත්සාහ කරන්න.</p>
+                    </div>
+                `;
+            }
+
+            startAutoRefresh() {
+                setInterval(() => {
+                    this.loadNews();
+                }, this.refreshInterval);
+            }
+        }
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', () => {
+            new NewsApp();
+        });
+    </script>
+</body>
+  </html>
